@@ -1,6 +1,16 @@
+/**
+* WinWLANProfile - Package for handling the Windows WLAN Profile XML Files
+* Author: Nigel Ticknor
+**/
+
+
 package WinWLANProfile
 
-import ("encoding/xml")
+import (
+	"os"
+	"io/ioutil"
+	"encoding/xml"
+	)
 
 type WLANProfile struct {
 	XMLName xml.Name `xml:"WLANProfile"`
@@ -53,4 +63,28 @@ type MacRandomization struct {
 	XMLName xml.Name `xml:"macRandomization"`
 	Xmlns string `xml:"xmlns,attr"`
 	EnableRandomization bool `xml:"enableRandomization"`
+}
+
+func ReadFile(filename string) (WLANProfile, error) {
+	var wlp WLANProfile
+	xmlFile, err := os.Open(filename)
+    if err != nil {
+		return wlp, err
+    }
+    defer xmlFile.Close()
+	byteValue, _ := ioutil.ReadAll(xmlFile)
+	xml.Unmarshal(byteValue,&wlp)
+	return wlp, nil
+}
+
+func WriteFile(filename string,wlp WLANProfile) (error) {
+	file, err  := xml.MarshalIndent(wlp,"","\t")
+	if err != nil {
+		return err
+	}
+	err = ioutil.WriteFile(filename,file,0644)
+	if err != nil {
+		return err
+	}
+	return nil
 }
